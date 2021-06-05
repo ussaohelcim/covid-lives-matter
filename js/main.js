@@ -17,7 +17,7 @@ let config = {
         arcade:{
             gravity:{y:800}
         }
-    },scene: [splash,menu,fases,instrucoes],
+    },scene: [splash,menu,fases,instrucoes,creditos],
     backgroundColor: '#b0e2f0'
     
 };

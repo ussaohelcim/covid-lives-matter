@@ -32,6 +32,9 @@ export default class Fases extends Phaser.Scene
     }
     create()
     {
+        this.highscore = localStorage.getItem('highscore');
+        this.score = 0;
+
         this.chao = this.physics.add.staticGroup();
         this.chao.create(0,this.cameras.main.height,'chao');
         // this.chao.setOrigin(0,1)
@@ -57,10 +60,10 @@ export default class Fases extends Phaser.Scene
         // this.CriarFase()
         // this.SetarColisores()
 
-        // this.cam = this.cameras.main
-        // //textos
-        // this.hud = this.add.text(10,10).setScrollFactor(0).setFontSize(20).setColor('#FFFFFF') 
-        // this.hud.text = "score: "
+        //textos
+        this.hud = this.add.text(10,10).setScrollFactor(0).setFontSize(40).setColor('#000') 
+        this.hud.text = "score: "
+
         this.hudJogador = this.add.text(0,0,'x: '+this.jogador.x+'y: '+this.jogador.y,{fontSize: '12px',fill: '#FFF'});
         //this.vacinaTimer = this.time.addEvent({delay:1000,callback:this.SpawnarVacina, callbackScope:this},this)
 
@@ -70,11 +73,15 @@ export default class Fases extends Phaser.Scene
         //this.SpawnarVacina()
         //this.SpawnarAlcoolGel()
         this.Spawnador();
+        this.Relogio();
+        
     }
     update()
     {
         this.ControleJogador();
         this.DesenharUI();
+        this.DiminiuirTamanho()
+
     }
     DerramarGel()
     {
@@ -282,6 +289,18 @@ export default class Fases extends Phaser.Scene
     Morrer()
     {
         this.jogadorVivo = false;
+        if(localStorage.getItem('highscore') == null)
+        {
+            localStorage.setItem('highscore',this.score)
+        }
+        else
+        {
+            if(this.score > localStorage.getItem('highscore'))
+            {
+                localStorage.setItem('highscore',this.score)
+            }
+
+        }
         //this.DispararAviso()
     }
     DispararAviso()
@@ -295,6 +314,15 @@ export default class Fases extends Phaser.Scene
     DesenharUI()
     {
         
+        if(this.score > localStorage.getItem('highscore'))
+        {
+            this.hud.text = "score: "+this.score+" <<<< NOVO RECORD";
+        }
+        else
+        {
+            this.hud.text = "score: "+this.score;
+        }
+
         if(this.jogadorVivo)
         {
             this.hudJogador.text = "tempo restante: "+this.getTempoDeVida();
@@ -305,6 +333,18 @@ export default class Fases extends Phaser.Scene
         {
             this.hudJogador.text  = "Você morreu."
         }
+    }
+    Relogio()
+    {
+        if(this.jogadorVivo)
+        {
+            let timer = this.time.delayedCall(1000,t =>{
+                this.score++;
+                timer.destroy()
+                this.Relogio();
+            })
+        }      
+
     }
 
 }
