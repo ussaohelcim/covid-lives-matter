@@ -12,17 +12,21 @@ export default class Fases extends Phaser.Scene
     {
         this.load.image('vacina','img/vacina.gif')
         this.load.image('vacinaQuebrado','img/vacinaQuebrado.gif')
+        this.load.audio('vacinaA','audio/vacina.ogg')
 
         this.load.image('mascara','img/mascara.gif')
 
         this.load.image('alcoolgel','img/alcoolgel.gif')
         this.load.image('alcoolgelQuebrado','img/alcoolgelQuebrado.gif')
+        this.load.image('gel','img/gel.gif')
+        this.load.audio('alcoolgelA','audio/alcoolgel.ogg')
 
         this.load.image('pessoa','img/pessoa.gif')        
         this.load.image('pessoaCaiu','img/pessoaCaiu.gif')    
+        this.load.audio('pessoaA','audio/pessoa.ogg')
 
         this.load.image('chao','img/chao.gif')
-        //covidinho
+
         this.load.image('coronga','img/coronga.gif');
 
     }
@@ -40,15 +44,16 @@ export default class Fases extends Phaser.Scene
         this.jogadorVivo = true
         this.velocidade = 200;
         this.setas = this.input.keyboard.createCursorKeys();
-        this.tempoVida = 15000;
+        this.tempoVida = 30000;
         this.temporizador = this.time.addEvent({delay:this.tempoVida, callback: this.Morrer, callbackScope:this},this);
         this.vitima = "";
         this.parasitando = false;
         this.noChao = false;
 
         this.physics.add.collider(this.jogador,this.chao, a =>{
-
+            this.noChao = true
         })
+        
         // this.CriarFase()
         // this.SetarColisores()
 
@@ -89,18 +94,23 @@ export default class Fases extends Phaser.Scene
             let tempo = Phaser.Math.Between(100,5000)
             let timer = this.time.delayedCall(tempo,()=>{
                 let opcao = Phaser.Math.Between(0,3)
+                console.log("opcao ",opcao)
                 switch (opcao) {
                     case 0:
                         this.SpawnarAlcoolGel()
+                        console.log("spawnow alcool em gel")
                         break;
                     case 1:
                         this.SpawnarMascara()
+                        console.log("spawnow mascara")
                         break;
                     case 2:
                         this.SpawnarVacina()
+                        console.log("spawnow vacinha")
                         break;
                     case 3:
                         this.SpawnarPessoa()
+                        console.log("spawnow pessoa")
                         break;
                 }
                 this.Spawnador()
@@ -111,91 +121,114 @@ export default class Fases extends Phaser.Scene
     }
     SpawnarMascara()
     {
-
-    }
-    CriarFase()
-    {
-
+        let local = Phaser.Math.Between(10,window.innerWidth)
+        let mascara = this.physics.add.sprite(local,0,'mascara')
+        this.physics.add.collider(mascara,this.chao,a =>{
+            mascara.setAlpha(0.3)
+            let timer = this.time.delayedCall(3000,()=>{
+                mascara.destroy();
+                timer.destroy();
+            })
+        })
     }
     SpawnarPessoa()
     {
-        let pessoa = this.physics.add.sprite(500,0,'pessoa')
+        let local = Phaser.Math.Between(10,window.innerWidth)
+        let pessoa = this.physics.add.sprite(local,0,'pessoa')
+        let tocouChao = false
+        let tocandoAudio = false
+        this.physics.add.overlap(this.jogador,pessoa, ()=>{
+            if(tocouChao && this.jogador.body.touching.down && !this.noChao)
+            {
+                //tocar som
+                this.novoTemporizador();
+                pessoa.destroy();
+            }
+        })
         this.physics.add.collider(pessoa,this.chao,a =>{
+            if(!tocandoAudio)
+            {
+                this.sound.play('pessoaA')
+                tocandoAudio = true
+            }
+            
             pessoa.setTexture('pessoaCaiu')
+            //tocar som
+            tocouChao = true
             let timer = this.time.delayedCall(3000,()=>{
                 pessoa.destroy();
                 timer.destroy();
             })
+
         })
     }
     SpawnarAlcoolGel()
     {
         let local = Phaser.Math.Between(10,window.innerWidth)
         let alquimGel = this.physics.add.sprite(local,0,'alcoolgel')
-        
+        let tocandoAudio = false
         this.physics.add.collider(alquimGel,this.chao,a =>{
+            //tocar som
+            if(!tocandoAudio)
+            {
+                this.sound.play('alcoolgelA')
+            }
+            alquimGel.body.enable = false;
             alquimGel.setTexture('alcoolgelQuebrado')
             alquimGel.setVelocityY(-400)
             alquimGel.setAlpha(0.3)
+            this.SpawnarGel(alquimGel.x,alquimGel.y)
             let timer = this.time.delayedCall(1000,()=>{
                 alquimGel.destroy()
                 timer.destroy()
             })
+            
         })
         
 
+    }
+    SpawnarGel(x,y)
+    {
+        let gel = this.physics.add.sprite(x,y+30,'gel')
+        this.physics.add.overlap(this.jogador,gel, a=>{
+            this.velocidade = 50;
+            console.log("tocando no gel")
+            let timer = this.time.delayedCall(1000,()=>{
+                gel.destroy();
+                timer.destroy();
+                this.velocidade = 200;
+            })
+        })
+        this.physics.add.collider(gel,this.chao,a =>{})
     }
     SpawnarVacina()
     {
         let local = Phaser.Math.Between(10,window.innerWidth)
         let vacina = this.physics.add.sprite(local,0,'vacina')
+        let tocandoAudio = false;
+        vacina.body.setSize(20,80)
         vacina.setVelocityY(100)
-        //this.vacinaTimer = this.time.addEvent({delay:1000,callback:this.SpawnarVacina, callbackScope:this},this);
+
         this.physics.add.collider(this.jogador,vacina, ()=>{
-            //this.jogadorVivo = false
-            this.tempoVida =0
+            //tocar som
+            this.temporizador.elapsed += this.temporizador.elapsed;
         })
         this.physics.add.collider(vacina, this.chao, ()=>{
+            if(!tocandoAudio)
+            {
+                this.sound.play('vacinaA')
+            }
+            vacina.body.enable = false;
             vacina.setVelocityY(-400)
             vacina.setTexture('vacinaQuebrado')
+            vacina.setAlpha(0.5);
             let timer = this.time.delayedCall(1000,()=>{
                 vacina.destroy()
                 timer.destroy();
             })
         })
     }
-    SetarColisores()
-    {
-        //this.physics.add.collider(this.jogador,mesa)
-        //colisao com o chao
-        // this.physics.add.collider(this.jogador,this.chao, colisao =>{
 
-        // })
-        // this.cenario.forEach(a =>{
-        //     this.physics.add.collider(this.jogador,a)
-        //     this.physics.add.collider(a,this.chao);
-            
-        // })
-
-        // //colisao dos inimigos
-        // for (let i = 0; i < this.inimigos.length; i++) {
-        //     //inimigo com o chao
-        //     this.physics.add.collider(this.inimigos[i],this.chao);
-
-        //     this.physics.add.collider(this.jogador, this.inimigos[i], colisao =>{
-        //         if(this.jogador.body.touching.down && !this.parasitando && (this.inimigos[i].tipo != 'pessoaMascara'))
-        //         {
-        //             console.log(this.inimigos[i].tipo)
-        //             this.novoTemporizador();
-        //             this.inimigos[i].setTexture('pessoaCorongada');
-        //             this.inimigos[i].body.enable = false;
-        //             this.parasitando = true;
-        //             this.vitima = this.inimigos[i];
-        //         }
-                
-        //     })            
-        // }
-    }
     // jogador
     ControleJogador()
     {
@@ -212,6 +245,7 @@ export default class Fases extends Phaser.Scene
             if(this.setas.up.isDown && this.jogador.body.touching.down)
             {
                 this.jogador.setVelocityY(-550);
+                this.noChao = false
             }
         }
         else
@@ -225,7 +259,7 @@ export default class Fases extends Phaser.Scene
     }
     novoTemporizador()
     {
-        this.temporizador.elapsed -= 3000
+        this.temporizador.elapsed -= 6000
     }
     DiminiuirTamanho()
     {
