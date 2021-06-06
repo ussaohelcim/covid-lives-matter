@@ -366,7 +366,7 @@ export default class Fases extends Phaser.Scene
         this.mensagem.setOrigin(0.5,0.5)
         //Did you see? If the virus couldnt infect anyone, after a time, it dies. If we work together, we will exterminate this problem.
 
-        let r = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y+150,"Clique aqui para recomeçar",{fontSize:"40px",fill:"#000"})
+        let r = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y+150,"Click here to try again.",{fontSize:"40px",fill:"#000"})
         r.x = this.cameras.main.midPoint.x - r.width /2
         r.setInteractive({useHandCursor:true})
         r.on('pointerdown',()=>{
