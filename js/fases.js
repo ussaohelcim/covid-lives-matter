@@ -384,7 +384,7 @@ export default class Fases extends Phaser.Scene
 
         if(this.score > localStorage.getItem('highscore'))
         {
-            this.hud.text = "score: "+this.score+" <<<< NOVO RECORD";
+            this.hud.text = "score: "+this.score+" <<<< NEW RECORD";
             
             if(!this.mostrouRecorde)
             {
@@ -399,13 +399,13 @@ export default class Fases extends Phaser.Scene
 
         if(this.jogadorVivo)
         {
-            this.hudJogador.text = "tempo restante: "+this.getTempoDeVida();
+            this.hudJogador.text = "Time left: "+this.getTempoDeVida();
             this.hudJogador.x = this.jogador.x 
             this.hudJogador.y = this.jogador.y - this.jogador.height
         }
         else
         {
-            this.hudJogador.text  = "O virus morreu."
+            this.hudJogador.text  = "The virus died.."
         }
     }
     Relogio()
