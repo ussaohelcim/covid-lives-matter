@@ -362,8 +362,9 @@ export default class Fases extends Phaser.Scene
     }
     DispararAviso()
     {
-        this.mensagem = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y,"Viu só? Caso o virus \nnão consiga infectar ninguem, \napós um tempo ele morre.\nSe todos trabalharmos juntos, \niremos conseguir exterminar este problema.\nEvite acumulações, use mascara.", {color:"#00000",fontSize: '40px' })  
+        this.mensagem = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y,"Did you see? If the virus \nthe virus couldnt infect anyone, \nafter a time, it dies.\nIf we work together, \nwe will exterminate this problem.", {color:"#00000",fontSize: '40px' })  
         this.mensagem.setOrigin(0.5,0.5)
+        //Did you see? If the virus couldnt infect anyone, after a time, it dies. If we work together, we will exterminate this problem.
 
         let r = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y+150,"Clique aqui para recomeçar",{fontSize:"40px",fill:"#000"})
         r.x = this.cameras.main.midPoint.x - r.width /2

@@ -28,7 +28,7 @@ export default class Menu extends Phaser.Scene
         titulo.x = this.cameras.main.width/2 
 
         let btnInstrucoes = this.add.text(this.cameras.main.width/2,
-            this.cameras.main.height-100,'Instrucoes',
+            this.cameras.main.height-100,'Instructions',
             {align:'center',fontSize:'40px',fill:'#ce7f24'}) ;
         btnInstrucoes.x -= btnInstrucoes.width/2;
         btnInstrucoes.setInteractive({useHandCursor:true})
@@ -39,7 +39,7 @@ export default class Menu extends Phaser.Scene
             btnInstrucoes.setBackgroundColor('#000')},this)
 
         let btnIniciar = this.add.text(this.cameras.main.width/2,
-                            this.cameras.main.height-200,'Iniciar',
+                            this.cameras.main.height-200,'Start',
                     {align:'center',fontSize:'40px',fill:'#ce7f24'});
         btnIniciar.x -= btnIniciar.width/2;
         btnIniciar.setInteractive({useHandCursor:true});
@@ -50,7 +50,7 @@ export default class Menu extends Phaser.Scene
             btnIniciar.setBackgroundColor('#000')},this)
 
         let btnCreditos = this.add.text(this.cameras.main.width/2,
-                this.cameras.main.height-150,'Creditos',
+                this.cameras.main.height-150,'Credits',
         {align:'center',fontSize:'40px',fill:'#ce7f24'});
         btnCreditos.x -= btnCreditos.width/2;
         btnCreditos.setInteractive({useHandCursor:true});
@@ -60,7 +60,7 @@ export default class Menu extends Phaser.Scene
         btnCreditos.on('pointerout',function(){
             btnCreditos.setBackgroundColor('#000')},this)
 
-        let btnRepositorio = this.add.text(0,0,"Codigo fonte",
+        let btnRepositorio = this.add.text(0,0,"Source code",
                             {fontSize: '40px',fill: '#ce7f24'})
         btnRepositorio.setInteractive({useHandCursor:true})
         btnRepositorio.on('pointerdown',this.goToRepository,this)

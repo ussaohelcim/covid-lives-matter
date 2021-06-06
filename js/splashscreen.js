@@ -19,7 +19,7 @@ export default class SplashScreen extends Phaser.Scene
         //console.log("chamou o create da splashscreen")
         //this.add.sprite(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y,'logo')
 
-        let btniniciar = this.add.text(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y+200,"clique aqui para iniciar",{align:'center', fontSize: '30px',fill:'#ce7f24'})
+        let btniniciar = this.add.text(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y+200,"Click here to start.",{align:'center', fontSize: '30px',fill:'#ce7f24'})
         btniniciar.x -= btniniciar.width /2
 
         btniniciar.setInteractive({useHandCursor:true})
