@@ -8,7 +8,7 @@ let splash = new SplashScreen();
 let menu = new Menu();
 let fases = new Fases();
 let instrucoes = new Instrucoes();
-let creditos = new Cr
+let creditos = new Creditos();
 
 let config = {
     type: Phaser.AUTO,

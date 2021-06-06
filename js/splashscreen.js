@@ -6,15 +6,20 @@ export default class SplashScreen extends Phaser.Scene
     }
     preload()
     {
-        this.load.image('logo','img/logo.gif')
+        //this.load.image('logo','img/logo.gif')
+        this.load.video('logo','img/logo.mp4')
     }
     
     create()
     {
-        console.log("chamou o create da splashscreen")
-        this.add.sprite(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y,'logo')
+        this.video = this.add.video(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y-200,'logo')
+        this.video.play(true);
 
-        let btniniciar = this.add.text(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y+100,"clique aqui para iniciar",{align:'center', fontSize: '30px',fill:'#ce7f24'})
+        this.cameras.main.setBackgroundColor('#000')
+        //console.log("chamou o create da splashscreen")
+        //this.add.sprite(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y,'logo')
+
+        let btniniciar = this.add.text(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y+200,"clique aqui para iniciar",{align:'center', fontSize: '30px',fill:'#ce7f24'})
         btniniciar.x -= btniniciar.width /2
 
         btniniciar.setInteractive({useHandCursor:true})
@@ -23,13 +28,14 @@ export default class SplashScreen extends Phaser.Scene
             console.log("apertou")
         },this)
         btniniciar.on('pointerover',function(){
-            btniniciar.setBackgroundColor('#000')
+            btniniciar.setBackgroundColor('#333')
         },this)
         btniniciar.on('pointerout', function(){
-            btniniciar.setBackgroundColor('#b0e2f0')},this)
+            btniniciar.setBackgroundColor('#000')},this)
     }
     irProMenu()
     {    
+        this.video.stop()
         this.scene.start('Menu');
         console.log("pediu pra ir pro menu");
     }

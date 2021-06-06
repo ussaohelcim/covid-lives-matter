@@ -29,20 +29,28 @@ export default class Fases extends Phaser.Scene
 
         this.load.image('coronga','img/coronga.gif');
 
+        //audios
+        this.load.audio('partida','audio/partida.wav')
+        this.load.audio('perdeu','audio/perdeu.wav')
+        this.load.audio('maisVida','audio/maisVida.wav')
+        this.load.audio('novoRecorde','audio/novoRecorde.wav')
+
     }
     create()
     {
         this.highscore = localStorage.getItem('highscore');
         this.score = 0;
+        this.segundos = 0;
+        this.chao = this.physics.add.staticGroup();//coloca o chao no grupo de objetos estaticos
+        this.chao.create(0,this.cameras.main.height,'chao');//cria o chão
 
-        this.chao = this.physics.add.staticGroup();
-        this.chao.create(0,this.cameras.main.height,'chao');
+
         // this.chao.setOrigin(0,1)
         // //this.plataforma = this.physics.add.staticGroup();
         
 
          //jogador
-        this.jogador = this.physics.add.sprite(0,0,'coronga');
+        this.jogador = this.physics.add.sprite(this.cameras.main.midPoint.x,this.cameras.main.midPoint.y,'coronga');
         this.jogador.setCollideWorldBounds(true)
         this.jogadorVivo = true
         this.velocidade = 200;
@@ -53,7 +61,7 @@ export default class Fases extends Phaser.Scene
         this.parasitando = false;
         this.noChao = false;
 
-        this.physics.add.collider(this.jogador,this.chao, a =>{
+        this.physics.add.collider(this.jogador,this.chao, a => {//colisao do jogador com o chao
             this.noChao = true
         })
         
@@ -63,8 +71,9 @@ export default class Fases extends Phaser.Scene
         //textos
         this.hud = this.add.text(10,10).setScrollFactor(0).setFontSize(40).setColor('#000') 
         this.hud.text = "score: "
+        
 
-        this.hudJogador = this.add.text(0,0,'x: '+this.jogador.x+'y: '+this.jogador.y,{fontSize: '12px',fill: '#FFF'});
+        this.hudJogador = this.add.text(0,0,'x: '+this.jogador.x+'y: '+this.jogador.y,{fontSize: '25px',fill: '#000'});
         //this.vacinaTimer = this.time.addEvent({delay:1000,callback:this.SpawnarVacina, callbackScope:this},this)
 
         //this.vacina ;
@@ -74,14 +83,33 @@ export default class Fases extends Phaser.Scene
         //this.SpawnarAlcoolGel()
         this.Spawnador();
         this.Relogio();
-        
+        this.musicaJogo = this.sound.add('partida')
+        this.musicaJogo.play()
+
+        this.musicaDerrota = this.sound.add('perdeu')
+        this.musicaMaisVida = this.sound.add('maisVida')
+        this.musicaNovoRecorde = this.sound.add('novoRecorde')
+
+        this.mostrouRecorde = false
+
+        this.cameras.main.setBackgroundColor("#44A")
+
+        this.rotacao = 0;
     }
     update()
     {
         this.ControleJogador();
         this.DesenharUI();
         this.DiminiuirTamanho()
-
+        this.musicaJogo.once('complete',()=>{
+            this.musicaJogo.play()
+        })
+        this.musicaDerrota.once('complete', ()=>{
+            this.musicaDerrota.play()
+        })
+        this.jogador.setAngle(this.rotacao)
+        //this.Touchscreen()
+        
     }
     DerramarGel()
     {
@@ -98,7 +126,7 @@ export default class Fases extends Phaser.Scene
     {
         if(this.jogadorVivo)
         {
-            let tempo = Phaser.Math.Between(100,5000)
+            let tempo = Phaser.Math.Between(100,2000)
             let timer = this.time.delayedCall(tempo,()=>{
                 let opcao = Phaser.Math.Between(0,3)
                 console.log("opcao ",opcao)
@@ -130,8 +158,15 @@ export default class Fases extends Phaser.Scene
     {
         let local = Phaser.Math.Between(10,window.innerWidth)
         let mascara = this.physics.add.sprite(local,0,'mascara')
+        mascara.setVelocityY(-100)
+        this.physics.add.collider(mascara,this.jogador,()=>{
+            this.temporizador.elapsed += 5000
+            mascara.destroy();
+        })
+
         this.physics.add.collider(mascara,this.chao,a =>{
             mascara.setAlpha(0.3)
+            mascara.body.enable = false;
             let timer = this.time.delayedCall(3000,()=>{
                 mascara.destroy();
                 timer.destroy();
@@ -144,12 +179,16 @@ export default class Fases extends Phaser.Scene
         let pessoa = this.physics.add.sprite(local,0,'pessoa')
         let tocouChao = false
         let tocandoAudio = false
+        let contaminouPessoa = false
         this.physics.add.overlap(this.jogador,pessoa, ()=>{
             if(tocouChao && this.jogador.body.touching.down && !this.noChao)
             {
                 //tocar som
+                
                 this.novoTemporizador();
-                pessoa.destroy();
+                //pessoa.destroy();
+                pessoa.body.enable = false
+                pessoa.setAlpha(0.5)
             }
         })
         this.physics.add.collider(pessoa,this.chao,a =>{
@@ -197,13 +236,22 @@ export default class Fases extends Phaser.Scene
     SpawnarGel(x,y)
     {
         let gel = this.physics.add.sprite(x,y+30,'gel')
+        if(gel.x >= this.jogador.x)
+        {
+            gel.setVelocityX(-300)
+        }
+        else
+        {
+            gel.setVelocityX(300)
+
+        }
         this.physics.add.overlap(this.jogador,gel, a=>{
             this.velocidade = 50;
             console.log("tocando no gel")
             let timer = this.time.delayedCall(1000,()=>{
+                this.velocidade = 200;
                 gel.destroy();
                 timer.destroy();
-                this.velocidade = 200;
             })
         })
         this.physics.add.collider(gel,this.chao,a =>{})
@@ -211,14 +259,14 @@ export default class Fases extends Phaser.Scene
     SpawnarVacina()
     {
         let local = Phaser.Math.Between(10,window.innerWidth)
-        let vacina = this.physics.add.sprite(local,0,'vacina')
+        let vacina = this.physics.add.sprite(this.jogador.x,0,'vacina')
         let tocandoAudio = false;
         vacina.body.setSize(20,80)
         vacina.setVelocityY(100)
 
         this.physics.add.collider(this.jogador,vacina, ()=>{
             //tocar som
-            this.temporizador.elapsed += this.temporizador.elapsed;
+            this.temporizador.elapsed += Number.MAX_VALUE
         })
         this.physics.add.collider(vacina, this.chao, ()=>{
             if(!tocandoAudio)
@@ -243,8 +291,11 @@ export default class Fases extends Phaser.Scene
         {
             if (this.setas.left.isDown) {
                 this.jogador.setVelocityX(-this.velocidade);
+                this.rotacao-=3;
+                
             } else if (this.setas.right.isDown) {
                 this.jogador.setVelocityX(this.velocidade);
+                this.rotacao+=3;
             } else {
                 this.jogador.setVelocityX(0);
             }
@@ -267,6 +318,7 @@ export default class Fases extends Phaser.Scene
     novoTemporizador()
     {
         this.temporizador.elapsed -= 6000
+        this.musicaMaisVida.play();
     }
     DiminiuirTamanho()
     {
@@ -301,22 +353,43 @@ export default class Fases extends Phaser.Scene
             }
 
         }
-        //this.DispararAviso()
+        this.musicaJogo.stop()
+
+        this.musicaDerrota.play()
+
+        
+        this.DispararAviso()
     }
     DispararAviso()
     {
-        this.mensagem = this.add.text(this.cam.midPoint.x, this.cam.midPoint.y,"Viu só? Caso o virus não consiga infectar ninguem, após um tempo ele morre.\nSe todos trabalharmos juntos, iremos conseguir exterminar este problema.\nEvite acumulações, use mascara.", {color:"#00000",fontSize: '30px' ,wordWrap: 300 })  
+        this.mensagem = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y,"Viu só? Caso o virus \nnão consiga infectar ninguem, \napós um tempo ele morre.\nSe todos trabalharmos juntos, \niremos conseguir exterminar este problema.\nEvite acumulações, use mascara.", {color:"#00000",fontSize: '40px' })  
         this.mensagem.setOrigin(0.5,0.5)
+
+        let r = this.add.text(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y+150,"Clique aqui para recomeçar",{fontSize:"40px",fill:"#000"})
+        r.x = this.cameras.main.midPoint.x - r.width /2
+        r.setInteractive({useHandCursor:true})
+        r.on('pointerdown',()=>{
+            this.musicaDerrota.stop()
+            this.scene.start('Fases',{fase:'fase1'})
+        })
+
+
     }
 
 
     //UI
     DesenharUI()
     {
-        
+
         if(this.score > localStorage.getItem('highscore'))
         {
             this.hud.text = "score: "+this.score+" <<<< NOVO RECORD";
+            
+            if(!this.mostrouRecorde)
+            {
+                this.mostrouRecorde = true
+                this.musicaNovoRecorde.play();
+            }
         }
         else
         {
@@ -331,7 +404,7 @@ export default class Fases extends Phaser.Scene
         }
         else
         {
-            this.hudJogador.text  = "Você morreu."
+            this.hudJogador.text  = "O virus morreu."
         }
     }
     Relogio()
@@ -339,12 +412,27 @@ export default class Fases extends Phaser.Scene
         if(this.jogadorVivo)
         {
             let timer = this.time.delayedCall(1000,t =>{
+
+                if(this.segundos==60)
+                {
+                    this.segundos = 0;
+                    this.novoTemporizador();
+                }
+                else this.segundos++
+
                 this.score++;
                 timer.destroy()
                 this.Relogio();
             })
         }      
 
+
+    }
+    Touchscreen()
+    {
+        let esquerda = this.add.rectangle(0,0,this.cameras.main.displayWidth,window.innerHeight)
+        esquerda.colo
+        esquerda.setAlpha(0.1)
     }
 
 }
